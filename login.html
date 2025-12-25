@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Корочки.есть</h1>
+        </header>
+        <main>
+            <div class="form-box">
+                <h2>Авторизация</h2>
+                <div id="error"></div>
+                <form id="form">
+                    <div>
+                        <label>Логин:</label>
+                        <input type="text" id="login" required>
+                    </div>
+                    <div>
+                        <label>Пароль:</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <button type="submit">Войти</button>
+                </form>
+                <p><a href="register.html">Еще не зарегистрированы? Регистрация</a></p>
+            </div>
+        </main>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        document.getElementById('form').onsubmit = function(e) {
+            e.preventDefault();
+            var login = document.getElementById('login').value.trim();
+            var password = document.getElementById('password').value;
+            var user = findUser(login);
+            
+            if (user && user.password === password) {
+                setCurrentUser(user);
+                window.location.href = 'index.html';
+            } else {
+                document.getElementById('error').innerHTML = '<div class="error-msg">Неверный логин или пароль</div>';
+            }
+        };
+    </script>
+</body>
+</html>

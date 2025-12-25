@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Корочки.есть - Панель администратора</h1>
+            <nav>
+                <a href="index.html">Главная</a>
+                <a href="logout.html">Выход</a>
+            </nav>
+        </header>
+        <main>
+            <h2>Все заявки</h2>
+            <div class="filter">
+                <label>Фильтр:</label>
+                <select id="filter" onchange="show()">
+                    <option value="">Все</option>
+                    <option value="Новая">Новая</option>
+                    <option value="Идет обучение">Идет обучение</option>
+                    <option value="Обучение завершено">Обучение завершено</option>
+                </select>
+            </div>
+            <div id="list"></div>
+            <div id="pages"></div>
+        </main>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        var user = getCurrentUser();
+        if (!user || user.login !== 'Admin') {
+            window.location.href = 'login.html';
+        }
+        
+        var page = 1;
+        var perPage = 10;
+        
+        function show() {
+            var filter = document.getElementById('filter').value;
+            var apps = getApplications();
+            
+            if (filter) {
+                var filtered = [];
+                for (var i = 0; i < apps.length; i++) {
+                    if (apps[i].status === filter) filtered.push(apps[i]);
+                }
+                apps = filtered;
+            }
+            
+            var total = apps.length;
+            var totalPages = Math.ceil(total / perPage);
+            var start = (page - 1) * perPage;
+            var end = start + perPage;
+            var pageApps = apps.slice(start, end);
+            
+            var list = document.getElementById('list');
+            var users = getUsers();
+            
+            if (pageApps.length === 0) {
+                list.innerHTML = '<p>Заявок не найдено.</p>';
+            } else {
+                var html = '';
+                for (var i = 0; i < pageApps.length; i++) {
+                    var app = pageApps[i];
+                    var appUser = null;
+                    for (var j = 0; j < users.length; j++) {
+                        if (users[j].id === app.user_id) {
+                            appUser = users[j];
+                            break;
+                        }
+                    }
+                    
+                    html += '<div class="card"><h3>' + app.course_name + '</h3>';
+                    html += '<p>Пользователь: ' + (appUser ? appUser.fio + ' (' + appUser.login + ')' : 'Неизвестно') + '</p>';
+                    html += '<p>Дата: ' + app.start_date + '</p>';
+                    html += '<p>Оплата: ' + app.payment_method + '</p>';
+                    html += '<p>Статус: <span class="status status-' + app.status.replace(/\s/g, '-').toLowerCase() + '">' + app.status + '</span></p>';
+                    html += '<form onsubmit="changeStatus(event, ' + app.id + ')"><select name="status">';
+                    html += '<option value="Новая"' + (app.status === 'Новая' ? ' selected' : '') + '>Новая</option>';
+                    html += '<option value="Идет обучение"' + (app.status === 'Идет обучение' ? ' selected' : '') + '>Идет обучение</option>';
+                    html += '<option value="Обучение завершено"' + (app.status === 'Обучение завершено' ? ' selected' : '') + '>Обучение завершено</option>';
+                    html += '</select><button type="submit">Изменить</button></form></div>';
+                }
+                list.innerHTML = html;
+            }
+            
+            // Пагинация
+            var pages = document.getElementById('pages');
+            if (totalPages > 1) {
+                html = '';
+                for (var i = 1; i <= totalPages; i++) {
+                    html += '<a href="#"' + (i === page ? ' class="active"' : '') + ' onclick="goPage(' + i + '); return false;">' + i + '</a>';
+                }
+                pages.innerHTML = html;
+            } else {
+                pages.innerHTML = '';
+            }
+        }
+        
+        function goPage(p) {
+            page = p;
+            show();
+        }
+        
+        function changeStatus(e, appId) {
+            e.preventDefault();
+            var status = e.target.status.value;
+            updateStatus(appId, status);
+            alert('Статус изменен');
+            show();
+        }
+        
+        show();
+    </script>
+</body>
+</html>

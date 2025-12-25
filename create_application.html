@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать заявку</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Корочки.есть</h1>
+            <nav>
+                <a href="index.html">Главная</a>
+                <a href="my_applications.html">Мои заявки</a>
+                <a href="logout.html">Выход</a>
+            </nav>
+        </header>
+        <main>
+            <div class="form-box">
+                <h2>Формирование заявки</h2>
+                <div id="message"></div>
+                <form id="form">
+                    <div>
+                        <label>Курс:</label>
+                        <select id="course" required>
+                            <option value="">Выберите курс</option>
+                            <option>Основы алгоритмизации и программирования</option>
+                            <option>Основы веб-дизайна</option>
+                            <option>Основы проектирования баз данных</option>
+                        </select>
+                        <span class="error" id="e1"></span>
+                    </div>
+                    <div>
+                        <label>Дата начала (ДД.ММ.ГГГГ):</label>
+                        <input type="text" id="date" placeholder="ДД.ММ.ГГГГ" required>
+                        <span class="error" id="e2"></span>
+                    </div>
+                    <div>
+                        <label>Способ оплаты:</label>
+                        <label><input type="radio" name="pay" value="наличными" required> Наличными</label>
+                        <label><input type="radio" name="pay" value="переводом по номеру телефона"> Переводом по номеру телефона</label>
+                        <span class="error" id="e3"></span>
+                    </div>
+                    <button type="submit">Отправить</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        var user = getCurrentUser();
+        if (!user || user.login === 'Admin') {
+            window.location.href = 'login.html';
+        }
+        
+        document.getElementById('form').onsubmit = function(e) {
+            e.preventDefault();
+            var course = document.getElementById('course').value;
+            var date = document.getElementById('date').value;
+            var pay = document.querySelector('input[name="pay"]:checked');
+            
+            document.getElementById('e1').textContent = '';
+            document.getElementById('e2').textContent = '';
+            document.getElementById('e3').textContent = '';
+            
+            var ok = true;
+            
+            if (!course) {
+                document.getElementById('e1').textContent = 'Выберите курс';
+                ok = false;
+            }
+            
+            if (!/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+                document.getElementById('e2').textContent = 'Формат: ДД.ММ.ГГГГ';
+                ok = false;
+            }
+            
+            if (!pay) {
+                document.getElementById('e3').textContent = 'Выберите способ оплаты';
+                ok = false;
+            }
+            
+            if (ok) {
+                var apps = getApplications();
+                var newId = 1;
+                if (apps.length > 0) {
+                    for (var i = 0; i < apps.length; i++) {
+                        if (apps[i].id >= newId) newId = apps[i].id + 1;
+                    }
+                }
+                
+                saveApplication({
+                    id: newId,
+                    user_id: user.id,
+                    course_name: course,
+                    start_date: date,
+                    payment_method: pay.value,
+                    status: 'Новая',
+                    created_at: new Date().toISOString()
+                });
+                
+                document.getElementById('message').innerHTML = '<div class="success">Заявка отправлена!</div>';
+                document.getElementById('form').reset();
+            }
+        };
+    </script>
+</body>
+</html>

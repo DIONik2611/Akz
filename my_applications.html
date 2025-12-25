@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заявки</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Корочки.есть</h1>
+            <nav>
+                <a href="index.html">Главная</a>
+                <a href="create_application.html">Создать заявку</a>
+                <a href="logout.html">Выход</a>
+            </nav>
+        </header>
+        <main>
+            <h2>Мои заявки</h2>
+            <div id="list"></div>
+        </main>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        var user = getCurrentUser();
+        if (!user || user.login === 'Admin') {
+            window.location.href = 'login.html';
+        }
+        
+        function show() {
+            var apps = getUserApplications(user.id);
+            var list = document.getElementById('list');
+            
+            if (apps.length === 0) {
+                list.innerHTML = '<p>У вас нет заявок.</p>';
+                return;
+            }
+            
+            var html = '';
+            for (var i = 0; i < apps.length; i++) {
+                var app = apps[i];
+                var review = getReviewByApp(app.id);
+                var reviewHtml = '';
+                
+                if (app.status === 'Обучение завершено') {
+                    if (review) {
+                        reviewHtml = '<div class="review"><h4>Ваш отзыв:</h4><p>' + review.review_text + '</p></div>';
+                    } else {
+                        reviewHtml = '<div class="review"><h4>Оставить отзыв:</h4><form onsubmit="addReview(event, ' + app.id + ')"><textarea name="text" required></textarea><button type="submit">Отправить</button></form></div>';
+                    }
+                }
+                
+                html += '<div class="card"><h3>' + app.course_name + '</h3>';
+                html += '<p>Дата: ' + app.start_date + '</p>';
+                html += '<p>Оплата: ' + app.payment_method + '</p>';
+                html += '<p>Статус: <span class="status status-' + app.status.replace(/\s/g, '-').toLowerCase() + '">' + app.status + '</span></p>';
+                html += reviewHtml;
+                html += '</div>';
+            }
+            list.innerHTML = html;
+        }
+        
+        function addReview(e, appId) {
+            e.preventDefault();
+            var text = e.target.text.value.trim();
+            if (text) {
+                var reviews = getReviews();
+                var newId = 1;
+                if (reviews.length > 0) {
+                    for (var i = 0; i < reviews.length; i++) {
+                        if (reviews[i].id >= newId) newId = reviews[i].id + 1;
+                    }
+                }
+                
+                saveReview({
+                    id: newId,
+                    user_id: user.id,
+                    application_id: appId,
+                    review_text: text,
+                    created_at: new Date().toISOString()
+                });
+                
+                show();
+            }
+        }
+        
+        show();
+    </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Корочки.есть</h1>
+            <nav id="nav"></nav>
+        </header>
+        <main>
+            <div class="slider-box">
+                <div class="slider">
+                    <div class="slide active"><div class="slide-img"><img src="./img/algoritm.png"></div></div>
+                    <div class="slide"><div class="slide-img"><img src="./img/web-disign.png"></div></div>
+                    <div class="slide"><div class="slide-img"><img src="./img/data-base.png"></div></div>
+                </div>
+                <button class="btn-slide" onclick="changeSlide(-1)">‹</button>
+                <button class="btn-slide" onclick="changeSlide(1)">›</button>
+            </div>
+            <div class="welcome">
+                <h2 id="welcome"></h2>
+            </div>
+        </main>
+    </div>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+    <script>
+        var user = getCurrentUser();
+        if (!user) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('welcome').textContent = 'Добро пожаловать, ' + user.fio + '!';
+            var nav = document.getElementById('nav');
+            if (user.login === 'Admin') {
+                nav.innerHTML = '<a href="admin.html">Панель администратора</a> <a href="logout.html">Выход</a>';
+            } else {
+                nav.innerHTML = '<a href="create_application.html">Создать заявку</a> <a href="my_applications.html">Мои заявки</a> <a href="logout.html">Выход</a>';
+            }
+        }
+    </script>
+</body>
+</html>
